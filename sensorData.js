@@ -1,16 +1,21 @@
 class SensorData {
-    gyro;
-    ultrasonic;
-    temperature;
-    gps;
-    batteryPercentage;
+    gyro = {};
+    ultrasound = {};
+    magnetometer = {};
+    temperature = {};
+    gps = {};
+    batteryPercentage = {};
+
+    set magnetometer(mag) {
+        this.magnetometer = mag;
+    }
 
     set gyro(gyro) {
         this.gyro = gyro;
     }
 
-    set ultrasonic(us) {
-        this.ultrasonic = us;
+    set ultrasound(us) {
+        this.ultrasound = us;
     }
 
     set temperature(temp) {
@@ -33,7 +38,7 @@ class SensorData {
         return this.temperature;
     }
 
-    get getUltrasonicData() {
+    get getUltrasoundData() {
         return this.ultrasonic;
     }
 
@@ -43,6 +48,10 @@ class SensorData {
 
     get getBatteryPercentage() {
         return this.batteryPercentage;
+    }
+
+    get getMagnetometer() {
+        return this.magnetometer;
     }
 
 }
