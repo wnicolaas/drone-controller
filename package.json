@@ -10,7 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ar-drone": "^0.3.3"
+    "ar-drone": "^0.3.3",
+    "python-shell": "^3.0.1"
   },
   "devDependencies": {
     "jest": "^28.1.0"
