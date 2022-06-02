@@ -5,14 +5,6 @@ var pcmd = {};
 console.log('Recovering from emergency mode if there was one ...');
 ref.emergency = true;
 
-
-let pythonpath = '/home/pi/gyro/gyro.py';
-
-// Use python shell
-let {PythonShell} = require('python-shell');
-let pyshell = new PythonShell(pythonpath);
-
-
 setTimeout(function() {
     console.log('Takeoff ...');
 
@@ -26,31 +18,40 @@ setTimeout(function() {
 
     ref.fly = false;
     pcmd = {};
-}, 16000);
+}, 30000);
 
-pyshell.on('message', function (message) {
+let pythonpath = '../gyro/gyro.py';
+
+gyro = require("child_process").spawn('unbuffer', ["python3", pythonpath], {
+    cwd: process.cwd(),
+    detached: false,
+    stdio: "pipe"
+});
+
+gyro.stdout.on("data", (data) => {
+    let message = data.toString().trimEnd();
     switch(message) {
         case "Left":
             pcmd = {
-                left: 0.5, // fly forward with 50% speed
+                left: 0.2, // fly left at 20% speed
             };
             console.log("Going Left...");
             break;
         case "Right":
             pcmd = {
-                right: 0.5, // fly forward with 50% speed
+                right: 0.2, // fly forward with 50% speed
             };
             console.log("Going Right...");
             break;
         case "Down":
             pcmd = {
-                back: 0.5, // fly back with 50% speed
+                back: 0.2, // fly back with 50% speed
             };
             console.log("Going backwards...");
             break;
         case "Up":
             pcmd = {
-                front: 0.5, //fly forward with 50% speed
+                front: 0.2, //fly forward with 50% speed
             };
             console.log("Going forwards..");
             break;
@@ -64,15 +65,6 @@ pyshell.on('message', function (message) {
             console.log("Neutral mode...");
             break;
     }
-});
-
-// end the input stream and allow the process to exit
-pyshell.end(function (err) {
-    if (err){
-        throw err;
-    }
-
-    console.log('finished');
 });
 
 
