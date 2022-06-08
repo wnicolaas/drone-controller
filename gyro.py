@@ -1,10 +1,8 @@
 #!/usr/bin/python
 
-# Control MPU-6050 Gyroscoop + Accelerometer from Raspberry Pi
-# https://raspberrytips.nl/mpu-6050-gyroscoop-raspberry-pi/
-
 import smbus
 import math
+import json
 
 # Power management registers
 power_mgmt_1 = 0x6b
@@ -44,7 +42,7 @@ def get_x_rotation(x, y, z):
     return math.degrees(radians)
 
 
-bus = smbus.SMBus(1)  # or bus = smbus.SMBus(1) for Revision 2 boards
+bus = smbus.SMBus(1)
 address = 0x68       # This is the address value read via the i2cdetect command
 
 # Now wake the 6050 up as it starts in sleep mode
@@ -55,9 +53,9 @@ while 1:
     # print("---------")
     # print("gyro data")
     #
-    # gyro_xout = read_word_2c(0x43)
-    # gyro_yout = read_word_2c(0x45)
-    # gyro_zout = read_word_2c(0x47)
+    gyro_xout = read_word_2c(0x43)
+    gyro_yout = read_word_2c(0x45)
+    gyro_zout = read_word_2c(0x47)
     #
     # print("gyro_xout: ", gyro_xout, " scaled: ", (gyro_xout / 131))
     # print("gyro_yout: ", gyro_yout, " scaled: ", (gyro_yout / 131))
@@ -75,6 +73,23 @@ while 1:
     accel_yout_scaled = accel_yout / 16384.0
     accel_zout_scaled = accel_zout / 16384.0
 
+    sensorData = {
+        "accelerometer": {
+            "acc_X": accel_xout,
+            "acc_Y": accel_yout,
+            "acc_Z": accel_zout
+        },
+        "gyroscope": {
+            "gyro_X": gyro_xout,
+            "gyro_Y": gyro_yout,
+            "gyro_Z": gyro_zout
+        },
+        "rotation": {
+            "x": get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled),
+            "y": get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+        }
+    }
+
     # print("accel_xout: ", accel_xout, " scaled: ", accel_xout_scaled)
     # print("accel_yout: ", accel_yout, " scaled: ", accel_yout_scaled)
     # print("accel_zout: ", accel_zout, " scaled: ", accel_zout_scaled)
@@ -83,20 +98,5 @@ while 1:
     # print("y rotation: ", get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled))
     #
 
-    if accel_zout > 10000:
-        print("Upright")
-
-    if accel_zout < -10000:
-        print("Upside down")
-
-    if accel_xout > 10000:
-        print("Left")
-
-    if accel_xout < -10000:
-        print("Right")
-
-    if accel_yout > 10000:
-        print("Down")
-
-    if accel_yout < -10000:
-        print("Up")
+    result = json.dumps(sensorData)
+    print(result)
