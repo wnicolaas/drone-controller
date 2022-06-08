@@ -120,6 +120,43 @@ function sleep(ms) {
 }
 
 
+client.on('navdata',  function(navdata){
+    //Handle drone data processing here...
+    counter = counter +1;
+    if(counter>250) {
+        counter = 0;
+        var raw_data_header;
+
+        if (navdata.rawMeasures && navdata.demo && navdata.pwm) {
+            raw_data_header = {
+                header: {
+                    time: navdata.time,
+                    sequenceNumber: navdata.sequenceNumber,
+                    flying: navdata.droneState.flying,
+                    batteryPercentage: navdata.batteryPercentage,
+                    altitude: navdata.demo.altitude,
+                    velocity: {
+                        x: navdata.demo.xVelocity,
+                        y: navdata.demo.yVelocity,
+                        z: navdata.demo.zVelocity
+                    },
+                    throttle: {
+                        forward: navdata.pwm.gazFeedForward,
+                        height: navdata.pwm.gazAltitude
+                    }
+                }
+            };
+            rgbController.batteryPercentage = parseInt(raw_data_header.header.batteryPercentage);
+            var data_to_be_sent = JSON.stringify(raw_data_header);
+            console.log(data_to_be_sent);
+        } else {
+            console.log("error getting sensor data")
+        }
+
+    }
+
+});
+
 setInterval(function() {
     client._ref = ref;
 
