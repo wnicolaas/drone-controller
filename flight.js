@@ -1,5 +1,5 @@
 const arDrone = require("ar-drone");
-const setBatteryPercentage = require("rgbController");
+const setBatteryPercentage = require("./rgbController");
 let client = arDrone.createClient();
 let ref = {};
 let pcmd = {};
@@ -9,6 +9,7 @@ client.config('general:navdata_demo', 'FALSE');
 client.config('general:navadata_options', 777060865);
 console.log('Recovering from emergency mode if there was one ...');
 ref.emergency = true;
+let counter = 250;
 
 let pythonpath = '../gyro/gyro.py';
 
@@ -25,6 +26,12 @@ gyro.stdout.on("data", async (data) => {
         let accY = sensorData.accelerometer.acc_Y;
         let accZ = sensorData.accelerometer.acc_Z;
 
+        let gyroX = sensorData.gyroscope.gyro_X;
+
+        let rotationX = sensorData.rotation.x;
+
+        console.log("gyro: " + gyroX + ", rotation: " + rotationX)
+
         let xSpeed = getSpeed(Math.abs(accX));
         let ySpeed = getSpeed(Math.abs(accY));
         let zSpeed = 0; // Disable going up or down for now
@@ -33,17 +40,18 @@ gyro.stdout.on("data", async (data) => {
         let yDirection = getDirection("Y", accY);
         let zDirection = getDirection("Z", accZ);
 
-        if (zDirection === "down" && isAwaiting === false) {
-            if (isFlying) {
-                land();
-                isAwaiting = true;
-                await sleep(3000);
-            }
-            else {
-                takeOff();
-                isAwaiting = true;
-                await sleep(3000);
-            }
+        // Detect Takeoff
+        if(gyroX < -15000 && 20 < rotationX < 40 && isAwaiting === false && isFlying === false) {
+            takeOff();
+            isAwaiting = true;
+            await sleep(3000);
+        }
+
+        // Detect Land
+        if(gyroX > 15000 && 20 < rotationX < 40 && isAwaiting === false && isFlying === true) {
+            land();
+            isAwaiting = true;
+            await sleep(3000);
         }
 
         pcmd = {
@@ -124,18 +132,15 @@ function sleep(ms) {
 
 
 client.on('navdata',  (data)=> {
-    //Handle drone data processing here...
     counter = counter +1;
     if(counter>250) {
         counter = 0;
-        if(data.demo){
+        if(data.demo) {
             setBatteryPercentage(data.demo.batteryPercentage);
-        }else {
+        } else {
             console.log("error getting sensor data")
         }
-
     }
-
 });
 
 setInterval(function() {
