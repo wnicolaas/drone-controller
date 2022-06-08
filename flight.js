@@ -1,9 +1,12 @@
 const arDrone = require("ar-drone");
+const setBatteryPercentage = require("rgbController");
 let client = arDrone.createClient();
 let ref = {};
 let pcmd = {};
 let isFlying = false;
 let isAwaiting = false;
+client.config('general:navdata_demo', 'FALSE');
+client.config('general:navadata_options', 777060865);
 console.log('Recovering from emergency mode if there was one ...');
 ref.emergency = true;
 
@@ -119,19 +122,21 @@ function sleep(ms) {
     }))
 }
 
-// setInterval(function() {
-//     // The emergency: true option recovers your drone from emergency mode that can
-//     // be caused by flipping it upside down or the drone crashing into something.
-//     // In a real program you probably only want to send emergency: true for one
-//     // second in the beginning, otherwise your drone may attempt to takeoff again
-//     // after a crash.
-//     control.ref(ref);
-//     // This command makes sure your drone hovers in place and does not drift.
-//     control.pcmd(pcmd);
-//     // This causes the actual udp message to be send (multiple commands are
-//     // combined into one message)
-//     control.flush();
-// }, 30);
+
+client.on('navdata',  (data)=> {
+    //Handle drone data processing here...
+    counter = counter +1;
+    if(counter>250) {
+        counter = 0;
+        if(data.demo){
+            setBatteryPercentage(data.demo.batteryPercentage);
+        }else {
+            console.log("error getting sensor data")
+        }
+
+    }
+
+});
 
 setInterval(function() {
     client._ref = ref;
