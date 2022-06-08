@@ -1,7 +1,7 @@
 const pigpio = require('pigpio'); //include pigpio to interact with the GPIO
 const Gpio = pigpio.Gpio;
 
-pigpio.configureSocketPort(8884);
+pigpio.configureInterfaces(pigpio.DISABLE_SOCK_IF); //disables socket interface
 
 var ledRed = new Gpio(4, {mode: Gpio.OUTPUT}), //use GPIO pin 4 as output for RED
     ledGreen = new Gpio(17, {mode: Gpio.OUTPUT}), //use GPIO pin 17 as output for GREEN
