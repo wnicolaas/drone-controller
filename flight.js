@@ -1,9 +1,11 @@
 const arDrone = require("ar-drone");
+const rgbController = require("rgbController")
 let client = arDrone.createClient();
 let ref = {};
 let pcmd = {};
 let isFlying = false;
 let isAwaiting = false;
+client.config('general:navdata_demo', 'FALSE');
 console.log('Recovering from emergency mode if there was one ...');
 ref.emergency = true;
 
@@ -146,9 +148,9 @@ client.on('navdata',  function(navdata){
                     }
                 }
             };
-            rgbController.batteryPercentage = parseInt(raw_data_header.header.batteryPercentage);
+            rgbController.percentageBattery = parseInt(raw_data_header.header.batteryPercentage);
             var data_to_be_sent = JSON.stringify(raw_data_header);
-            console.log(data_to_be_sent);
+            //console.log(data_to_be_sent);
         } else {
             console.log("error getting sensor data")
         }
