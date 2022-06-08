@@ -35,12 +35,11 @@ gyro.stdout.on("data", async (data) => {
                 land();
                 isAwaiting = true;
                 await sleep(3000);
-
-            } else {
+            }
+            else {
                 takeOff();
                 isAwaiting = true;
                 await sleep(3000);
-
             }
         }
 
