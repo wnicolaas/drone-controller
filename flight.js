@@ -119,19 +119,6 @@ function sleep(ms) {
     }))
 }
 
-// setInterval(function() {
-//     // The emergency: true option recovers your drone from emergency mode that can
-//     // be caused by flipping it upside down or the drone crashing into something.
-//     // In a real program you probably only want to send emergency: true for one
-//     // second in the beginning, otherwise your drone may attempt to takeoff again
-//     // after a crash.
-//     control.ref(ref);
-//     // This command makes sure your drone hovers in place and does not drift.
-//     control.pcmd(pcmd);
-//     // This causes the actual udp message to be send (multiple commands are
-//     // combined into one message)
-//     control.flush();
-// }, 30);
 
 setInterval(function() {
     client._ref = ref;
