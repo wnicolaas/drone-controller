@@ -1,11 +1,12 @@
 const arDrone = require("ar-drone");
-const rgbController = require("rgbController")
+const setBatteryPercentage = require("rgbController");
 let client = arDrone.createClient();
 let ref = {};
 let pcmd = {};
 let isFlying = false;
 let isAwaiting = false;
 client.config('general:navdata_demo', 'FALSE');
+client.config('general:navadata_options', 777060865);
 console.log('Recovering from emergency mode if there was one ...');
 ref.emergency = true;
 
@@ -122,36 +123,14 @@ function sleep(ms) {
 }
 
 
-client.on('navdata',  function(navdata){
+client.on('navdata',  (data)=> {
     //Handle drone data processing here...
     counter = counter +1;
     if(counter>250) {
         counter = 0;
-        var raw_data_header;
-
-        if (navdata.rawMeasures && navdata.demo && navdata.pwm) {
-            raw_data_header = {
-                header: {
-                    time: navdata.time,
-                    sequenceNumber: navdata.sequenceNumber,
-                    flying: navdata.droneState.flying,
-                    batteryPercentage: navdata.batteryPercentage,
-                    altitude: navdata.demo.altitude,
-                    velocity: {
-                        x: navdata.demo.xVelocity,
-                        y: navdata.demo.yVelocity,
-                        z: navdata.demo.zVelocity
-                    },
-                    throttle: {
-                        forward: navdata.pwm.gazFeedForward,
-                        height: navdata.pwm.gazAltitude
-                    }
-                }
-            };
-            rgbController.percentageBattery = parseInt(raw_data_header.header.batteryPercentage);
-            var data_to_be_sent = JSON.stringify(raw_data_header);
-            //console.log(data_to_be_sent);
-        } else {
+        if(data.demo){
+            setBatteryPercentage(data.demo.batteryPercentage);
+        }else {
             console.log("error getting sensor data")
         }
 
