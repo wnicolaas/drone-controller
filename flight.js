@@ -30,8 +30,6 @@ gyro.stdout.on("data", async (data) => {
 
         let rotationX = sensorData.rotation.x;
 
-        console.log("gyro: " + gyroX + ", rotation: " + rotationX)
-
         let xSpeed = getSpeed(Math.abs(accX));
         let ySpeed = getSpeed(Math.abs(accY));
         let zSpeed = 0; // Disable going up or down for now
@@ -40,15 +38,17 @@ gyro.stdout.on("data", async (data) => {
         let yDirection = getDirection("Y", accY);
         let zDirection = getDirection("Z", accZ);
 
+        let isFlexed = sensorData.flex > 2.5
+
         // Detect Takeoff
-        if(gyroX < -15000 && 20 < rotationX < 40 && isAwaiting === false && isFlying === false) {
+        if(gyroX < 15000 && -20 > rotationX > -40 && isAwaiting === false && isFlying === false && isFlexed) {
             takeOff();
             isAwaiting = true;
             await sleep(3000);
         }
 
         // Detect Land
-        if(gyroX > 15000 && 20 < rotationX < 40 && isAwaiting === false && isFlying === true) {
+        if(gyroX > -15000 && -20 > rotationX > -40 && isAwaiting === false && isFlying === true && isFlexed) {
             land();
             isAwaiting = true;
             await sleep(3000);
@@ -70,18 +70,18 @@ function getDirection(axis, value){
     if(value > 0){
         switch (axis) {
             case "X":
-                return "right";
+                return "left";
             case "Y":
-                return "front";
+                return "back";
             case "Z":
                 return "up";
         }
     } else {
         switch (axis) {
             case "X":
-                return "left";
+                return "right";
             case "Y":
-                return "back";
+                return "front";
             case "Z":
                 return "down";
         }
