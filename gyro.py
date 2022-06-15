@@ -86,7 +86,9 @@ while 1:
     accel_yout_scaled = accel_yout / 16384.0
     accel_zout_scaled = accel_zout / 16384.0
 
-    timestamp = datetime.now() - time_start
+    time_end = datetime.now()
+
+    timestamp = time_end - time_start
 
     sensorData = {
         "accelerometer": {
@@ -104,7 +106,7 @@ while 1:
             "y": get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
         },
         "flex": chan.voltage,
-        "timestamp": timestamp
+        "timestamp": timestamp.total_seconds() * 1000
     }
 
     # print("accel_xout: ", accel_xout, " scaled: ", accel_xout_scaled)
