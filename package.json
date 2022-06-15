@@ -4,12 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ar-drone": "^0.3.3"
+    "ar-drone": "^0.3.3",
+    "pigpio": "^3.3.1",
+    "python-shell": "^3.0.1"
+  },
+  "devDependencies": {
+    "jest": "^28.1.0"
   }
 }

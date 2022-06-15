@@ -39,7 +39,7 @@ class SensorData {
     }
 
     get getUltrasoundData() {
-        return this.ultrasonic;
+        return this.ultrasound;
     }
 
     get getGyroData() {
