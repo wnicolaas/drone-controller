@@ -32,32 +32,48 @@ gyro.stdout.on("data", async (data) => {
 
         let xSpeed = getSpeed(Math.abs(accX));
         let ySpeed = getSpeed(Math.abs(accY));
-        let zSpeed = 0; // Disable going up or down for now
 
         let xDirection = getDirection("X", accX);
         let yDirection = getDirection("Y", accY);
-        let zDirection = getDirection("Z", accZ);
 
         let isFlexed = sensorData.flex > 2.5
 
         // Detect Takeoff
-        if(gyroX < 15000 && -20 > rotationX > -40 && isAwaiting === false && isFlying === false && isFlexed) {
+        if(gyroX > 20000 && -20 > rotationX > -40 && !isAwaiting && !isFlying && isFlexed) {
             takeOff();
             isAwaiting = true;
             await sleep(3000);
         }
 
         // Detect Land
-        if(gyroX > -15000 && -20 > rotationX > -40 && isAwaiting === false && isFlying === true && isFlexed) {
+        if(gyroX < -20000 && -20 > rotationX > -40 && !isAwaiting && isFlying && isFlexed) {
             land();
             isAwaiting = true;
             await sleep(3000);
         }
 
-        pcmd = {
-            [xDirection]: xSpeed,
-            [yDirection]: ySpeed,
-            [zDirection]: zSpeed
+        // if(!isAwaiting){
+        //     pcmd = {}
+        // }
+
+        if(!isFlexed) {
+            pcmd = {
+                [xDirection]: xSpeed,
+                [yDirection]: ySpeed
+            }
+        }
+
+        // Detect Ascend
+        if(20 < rotationX < 35 && accX < 0 && accZ < 0 && isFlexed && isFlying && !isAwaiting){
+            pcmd["up"] = 0.3;
+            pcmd["down"] = 0;
+            pcmd["right"] = 0;
+        }
+
+        if(-35 < rotationX < -20 && accX < 0 && accZ < 0 && isFlexed && isFlying && !isAwaiting){
+            pcmd["down"] = 0.3;
+            pcmd["up"] = 0.0;
+            pcmd["right"] = 0;
         }
 
         // console.log(pcmd);
@@ -94,8 +110,8 @@ function getSpeed(accelerometerAxisData) {
     const SPEED_LEVEL_THREE = 0.5;
 
     if(accelerometerAxisData > 9000) {
-        if(accelerometerAxisData > 12500) {
-            if(accelerometerAxisData > 16000) {
+        if(accelerometerAxisData > 11000) {
+            if(accelerometerAxisData > 13000) {
                 return SPEED_LEVEL_THREE;
             }
             return SPEED_LEVEL_TWO;
