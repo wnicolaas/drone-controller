@@ -24,7 +24,6 @@ gyro.stdout.on("data", async (data) => {
         let sensorData = JSON.parse(data);
         let accX = sensorData.accelerometer.acc_X;
         let accY = sensorData.accelerometer.acc_Y;
-        let accZ = sensorData.accelerometer.acc_Z;
 
         let gyroX = sensorData.gyroscope.gyro_X;
 
@@ -64,16 +63,19 @@ gyro.stdout.on("data", async (data) => {
         }
 
         // Detect Ascend
-        if(20 < rotationX < 35 && accX < 0 && accZ < 0 && isFlexed && isFlying && !isAwaiting){
-            pcmd["up"] = 0.3;
-            pcmd["down"] = 0;
-            pcmd["right"] = 0;
+        if(20 < rotationX < 75 && accX < -5000 && accY > 0 && isFlexed && isFlying && !isAwaiting){
+            console.log(iteration + ": Ascending...");
+            pcmd = {
+                "up": 0.3
+            }
         }
 
-        if(-35 < rotationX < -20 && accX < 0 && accZ < 0 && isFlexed && isFlying && !isAwaiting){
-            pcmd["down"] = 0.3;
-            pcmd["up"] = 0.0;
-            pcmd["right"] = 0;
+        // Detect Descend
+        if(rotationX > -60 && rotationX < -20 && accX < 0 && accY < 0 && isFlexed && isFlying && !isAwaiting){
+            console.log(iteration + "Descending...");
+            pcmd = {
+                "down": 0.3
+            }
         }
 
         // console.log(pcmd);
@@ -110,8 +112,8 @@ function getSpeed(accelerometerAxisData) {
     const SPEED_LEVEL_THREE = 0.5;
 
     if(accelerometerAxisData > 9000) {
-        if(accelerometerAxisData > 11000) {
-            if(accelerometerAxisData > 13000) {
+        if(accelerometerAxisData > 12000) {
+            if(accelerometerAxisData > 14000) {
                 return SPEED_LEVEL_THREE;
             }
             return SPEED_LEVEL_TWO;
