@@ -35,7 +35,7 @@ gyro.stdout.on("data", async (data) => {
         let xDirection = getDirection("X", accX);
         let yDirection = getDirection("Y", accY);
 
-        let isFlexed = sensorData.flex > 2.5
+        let isFlexed = sensorData.flex > 2.5;
 
         // Detect Takeoff
         if(gyroX > 20000 && -20 > rotationX > -40 && !isAwaiting && !isFlying && isFlexed) {
