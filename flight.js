@@ -24,7 +24,6 @@ gyro.stdout.on("data", async (data) => {
         let sensorData = JSON.parse(data);
         let accX = sensorData.accelerometer.acc_X;
         let accY = sensorData.accelerometer.acc_Y;
-        let accZ = sensorData.accelerometer.acc_Z;
 
         let gyroX = sensorData.gyroscope.gyro_X;
 
@@ -32,32 +31,51 @@ gyro.stdout.on("data", async (data) => {
 
         let xSpeed = getSpeed(Math.abs(accX));
         let ySpeed = getSpeed(Math.abs(accY));
-        let zSpeed = 0; // Disable going up or down for now
 
         let xDirection = getDirection("X", accX);
         let yDirection = getDirection("Y", accY);
-        let zDirection = getDirection("Z", accZ);
 
-        let isFlexed = sensorData.flex > 2.5
+        let isFlexed = sensorData.flex > 2.5;
 
         // Detect Takeoff
-        if(gyroX < 15000 && -20 > rotationX > -40 && isAwaiting === false && isFlying === false && isFlexed) {
+        if(gyroX > 20000 && -20 > rotationX > -40 && !isAwaiting && !isFlying && isFlexed) {
             takeOff();
             isAwaiting = true;
             await sleep(3000);
         }
 
         // Detect Land
-        if(gyroX > -15000 && -20 > rotationX > -40 && isAwaiting === false && isFlying === true && isFlexed) {
+        if(gyroX < -20000 && -20 > rotationX > -40 && !isAwaiting && isFlying && isFlexed) {
             land();
             isAwaiting = true;
             await sleep(3000);
         }
 
-        pcmd = {
-            [xDirection]: xSpeed,
-            [yDirection]: ySpeed,
-            [zDirection]: zSpeed
+        // if(!isAwaiting){
+        //     pcmd = {}
+        // }
+
+        if(!isFlexed) {
+            pcmd = {
+                [xDirection]: xSpeed,
+                [yDirection]: ySpeed
+            }
+        }
+
+        // Detect Ascend
+        if(20 < rotationX < 75 && accX < -5000 && accY > 0 && isFlexed && isFlying && !isAwaiting){
+            console.log(iteration + ": Ascending...");
+            pcmd = {
+                "up": 0.3
+            }
+        }
+
+        // Detect Descend
+        if(rotationX > -60 && rotationX < -20 && accX < 0 && accY < 0 && isFlexed && isFlying && !isAwaiting){
+            console.log(iteration + "Descending...");
+            pcmd = {
+                "down": 0.3
+            }
         }
 
         // console.log(pcmd);
@@ -94,8 +112,8 @@ function getSpeed(accelerometerAxisData) {
     const SPEED_LEVEL_THREE = 0.5;
 
     if(accelerometerAxisData > 9000) {
-        if(accelerometerAxisData > 12500) {
-            if(accelerometerAxisData > 16000) {
+        if(accelerometerAxisData > 12000) {
+            if(accelerometerAxisData > 14000) {
                 return SPEED_LEVEL_THREE;
             }
             return SPEED_LEVEL_TWO;
