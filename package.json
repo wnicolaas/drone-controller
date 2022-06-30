@@ -11,10 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "ar-drone": "^0.3.3",
-    "pigpio": "^3.3.1",
-    "python-shell": "^3.0.1"
+    "pigpio": "^3.3.1"
   },
   "devDependencies": {
-    "jest": "^28.1.0"
   }
 }
