@@ -167,6 +167,9 @@ while 1:
 
     timestamp = time_end - time_start
 
+    rot_x = get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+    rot_y = get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+
     sensorData = {
         "accelerometer": {
             "acc_X": accel_xout,
@@ -179,13 +182,13 @@ while 1:
             "gyro_Z": gyro_zout
         },
         "magnetometer": {
-            "mag_x": mx,
-            "mag_y": my,
-            "mag_z": mz,
+            "mag_X": mx,
+            "mag_Y": my,
+            "mag_Z": mz
         },
         "rotation": {
-            "x": get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled),
-            "y": get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+            "X": rot_x,
+            "Y": rot_y
         },
         "flex": chan.voltage,
         "timestamp": timestamp.total_seconds() * 1000
