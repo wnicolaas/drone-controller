@@ -11,7 +11,16 @@ console.log('Recovering from emergency mode if there was one ...');
 ref.emergency = true;
 let counter = 250;
 
-let pythonpath = '../gyro/gyro.py';
+let pythonpath = '../sensors/sensors.py';
+let magnetometerBaseValue = 0;
+
+const YawStates = {
+    Left: 0,
+    Neutral: 1,
+    Right: 2
+}
+
+let yawState = YawStates.Neutral;
 
 gyro = require("child_process").spawn('unbuffer', ["python3", pythonpath], {
     cwd: process.cwd(),
@@ -24,10 +33,14 @@ gyro.stdout.on("data", async (data) => {
         let sensorData = JSON.parse(data);
         let accX = sensorData.accelerometer.acc_X;
         let accY = sensorData.accelerometer.acc_Y;
+        let accZ = sensorData.accelerometer.acc_Z;
 
         let gyroX = sensorData.gyroscope.gyro_X;
+        let gyroZ = sensorData.gyroscope.gyro_Z;
 
-        let rotationX = sensorData.rotation.x;
+        let magY = sensorData.magnetometer.mag_Y;
+
+        let rotationX = sensorData.rotation.X;
 
         let xSpeed = getSpeed(Math.abs(accX));
         let ySpeed = getSpeed(Math.abs(accY));
@@ -35,7 +48,52 @@ gyro.stdout.on("data", async (data) => {
         let xDirection = getDirection("X", accX);
         let yDirection = getDirection("Y", accY);
 
-        let isFlexed = sensorData.flex > 2.5;
+        let isFlexed = sensorData.flex > 2;
+
+        if(!isFlexed){
+            magnetometerBaseValue = magY;
+            yawState = YawStates.Neutral;
+        }
+
+        let isYawStateChange = magY > magnetometerBaseValue + 5 || magY < magnetometerBaseValue - 5;
+        let canChangeYawState = true;
+
+        // Detect Yaw State Changes
+        if(gyroZ < -3000 && yawState === YawStates.Neutral && isYawStateChange && canChangeYawState) {
+            yawState = YawStates.Right;
+            magnetometerBaseValue = magY;
+            canChangeYawState = false;
+        }
+
+        if(gyroZ > 3000 && yawState === YawStates.Right && isYawStateChange && canChangeYawState) {
+            yawState = YawStates.Neutral;
+            magnetometerBaseValue = magY;
+            canChangeYawState = false;
+        }
+
+        if(gyroZ > 3000 && yawState === YawStates.Neutral && isYawStateChange && canChangeYawState) {
+            yawState = YawStates.Left;
+            magnetometerBaseValue = magY;
+        }
+
+        if(yawState === YawStates.Right && accZ > 10000 && isFlexed && isFlying) {
+            pcmd = {
+                "clockwise": 0.3
+            }
+        }
+
+        if(yawState === YawStates.Neutral || accZ < 7500 ) {
+            pcmd = {
+                "clockwise": 0,
+                "counterClockwise": 0
+            }
+        }
+
+        if(yawState === YawStates.Left && accZ > 10000 && isFlexed && isFlying) {
+            pcmd = {
+                "counterClockwise": 0.3
+            }
+        }
 
         // Detect Takeoff
         if(gyroX > 20000 && -20 > rotationX > -40 && !isAwaiting && !isFlying && isFlexed) {
@@ -55,6 +113,7 @@ gyro.stdout.on("data", async (data) => {
         //     pcmd = {}
         // }
 
+        // Basic gesture detection
         if(!isFlexed) {
             pcmd = {
                 [xDirection]: xSpeed,
@@ -64,7 +123,6 @@ gyro.stdout.on("data", async (data) => {
 
         // Detect Ascend
         if(20 < rotationX < 75 && accX < -5000 && accY > 0 && isFlexed && isFlying && !isAwaiting){
-            console.log(iteration + ": Ascending...");
             pcmd = {
                 "up": 0.3
             }
@@ -72,7 +130,6 @@ gyro.stdout.on("data", async (data) => {
 
         // Detect Descend
         if(rotationX > -60 && rotationX < -20 && accX < 0 && accY < 0 && isFlexed && isFlying && !isAwaiting){
-            console.log(iteration + "Descending...");
             pcmd = {
                 "down": 0.3
             }
